@@ -21,6 +21,7 @@ CSRCDIR = c_src
 LSRCDIR = src
 INCDIR = include
 EMACSDIR = emacs
+DSRCDIR = dialyzer
 PREFIX ?= /usr/local
 INSTALL = install
 INSTALL_DIR = $(INSTALL) -m755 -d
@@ -59,6 +60,8 @@ YSRCS = $(notdir $(wildcard $(SRCDIR)/*.yrl))
 LSRCS = $(notdir $(wildcard $(LSRCDIR)/*.lfe))
 EBINS = $(ESRCS:.erl=.beam) $(XSRCS:.xrl=.beam) $(YSRCS:.yrl=.beam)
 LBINS = $(LSRCS:.lfe=.beam)
+DSRCS = $(notdir $(wildcard $(DSRCDIR)/*.erl))
+DBINS = $(DSRCS:.erl=.beam)
 
 CSRCS = $(notdir $(wildcard $(CSRCDIR)/*.c))
 BINS = $(CSRCS:.c=)
@@ -89,7 +92,7 @@ all: compile
 .PHONY: compile erlc-compile lfec-compile erlc-lfec emacs install docs clean docker-build docker-push docker
 
 compile: comp_opts.mk
-	$(MAKE) $(MFLAGS) erlc-lfec
+	$(MAKE) $(MFLAGS) erlc-lfec dialyzer
 
 ## Compile Erlang files using erlc
 erlc-compile: $(addprefix $(EBINDIR)/, $(EBINS)) $(addprefix $(BINDIR)/, $(BINS))
@@ -112,6 +115,8 @@ emacs:
 comp_opts.mk:
 	escript get_comp_opts.escript
 
+dialyzer: $(addprefix $(EBINDIR)/, $(DBINS))
+
 -include comp_opts.mk
 
 install: compile install-man
@@ -122,6 +127,7 @@ install: compile install-man
 	$(INSTALL_DATA) $(addprefix $(EBINDIR)/, $(LBINS)) $(DESTEBINDIR)
 	$(INSTALL_DIR) $(DESTBINDIR)
 	$(INSTALL_BIN) $(BINDIR)/lfe{,c,doc,script} $(DESTBINDIR)
+	$(INSTALL_BIN) $(BINDIR)/ldialyzer $(DESTBINDIR)
 	ln -sf $(DESTBINDIR)/* $(PREFIX)/bin/
 
 clean:
