@@ -20,6 +20,8 @@
   "LFE Clojure interface library."
   ;; Function macros.
   (export-macro defn defn- fn)
+  ;; #lang clj macro.
+  (export-macro |#lang|)
   ;; Threading macros.
   (export-macro -> ->> as-> cond-> cond->> some-> some->> doto)
   ;; Conditional macros.
