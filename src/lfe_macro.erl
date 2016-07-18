@@ -1150,7 +1150,31 @@ exp_orelse([]) -> ?Q(false).
 
 exp_defmodule([]) -> {[],[]};
 exp_defmodule([Doc|Atts]=Rest) ->
-    ?IF(is_doc_string(Doc), {[[doc,Doc]],Atts}, {[],Rest}).
+    ?IF(is_doc_string(Doc),
+        exp_mod_meta({[[doc,Doc]],[]}, Atts),
+        exp_mod_meta({[],[]}, Rest)).
+
+exp_mod_meta({Meta,Atts}, []) -> {Meta,Atts};
+exp_mod_meta({Meta,Atts}, [[lang,Mod]|As]) ->   %Pull (lang ...) into Meta
+    exp_mod_meta({[[lang,Mod]|Meta],Atts}, As);
+exp_mod_meta({Meta,Atts}, [[doc,_]|As]) ->      %Discard (doc ...)
+    exp_mod_meta({Meta,Atts}, As);
+exp_mod_meta({Meta,Atts}, [A|As]) ->            %Pass on attributes
+    exp_mod_meta({Meta,[A|Atts]}, As).
+
+has_lang([])              -> no;
+has_lang([[lang,Lang]|_]) -> {yes,Lang};
+has_lang([_|Meta])        -> has_lang(Meta).
+
+%% maybe_lang(Meta) -> [['eval-when-compile'|...]] | [].
+
+maybe_lang(Meta) ->
+    case has_lang(Meta) of
+        no         -> [];
+        {yes,Lang} -> [['eval-when-compile',
+                        ['include-lib',"lfe/include/lang.lfe"],
+                        ['#lang',Lang]]]
+    end.
 
 %% exp_deftype(Type, Def) -> {Type,Def}.
 %%  Paramterless types to be written as just type name and default
