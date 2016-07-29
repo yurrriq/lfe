@@ -247,6 +247,13 @@ check_attr([export|Es], L, St) ->
             St#lint{exps=Exps};
         no -> bad_mdef_error(L, export, St)
     end;
+check_attr(['export*'|Es], L, St) ->
+    case is_falist(Es) of
+        {yes,Fs} ->
+            Exps = add_exports(St#lint.exps, Fs),
+            St#lint{exps=Exps};
+        no -> bad_mdef_error(L, 'export*', St)
+    end;
 check_attr([import|Is], L, St) ->
     check_imports(Is, L, St);
 check_attr([doc|Docs], L, St0) ->
@@ -305,6 +312,16 @@ is_flist([[F,Ar]|Fs], Funcs) when is_atom(F), is_integer(Ar), Ar >= 0 ->
     is_flist(Fs, add_element({F,Ar}, Funcs));
 is_flist([], Funcs) -> {yes,Funcs};
 is_flist(_, _) -> no.
+
+is_falist(Fas) -> is_falist(Fas, []).
+
+is_falist([[F,Ar|Ars]|Fas], Funcs) when is_atom(F), is_integer(Ar), Ar >= 0 ->
+    ?IF(all(fun (A) -> is_integer(A) andalso A >= 0 end, Ars),
+        is_falist(Fas, foldl(fun (A, Acc) -> add_element({F,A}, Acc) end,
+                             add_element({F,Ar}, Funcs), Ars)),
+        no);
+is_falist([], Funcs) -> {yes,Funcs};
+is_falist(_,  _)     -> no.
 
 %% check_type_def(Type, Def, Line, State) -> State.
 %%  Check a type definition.

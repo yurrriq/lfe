@@ -135,6 +135,7 @@ collect_attrs(As, L, St) ->
     foldl(fun (A, S) -> collect_attr(A, L, S) end, St, As).
 
 collect_attr([export|Es], _, St) -> collect_exps(Es, St);
+collect_attr(['export*'|Es], _, St) -> 'collect_exps*'(Es, St);
 collect_attr([import|Is], _, St) -> collect_imps(Is, St);
 collect_attr([doc|_], _, St) -> St;             %Don't save doc attribute!
 collect_attr([N|Vs], L, #cg{atts=As}=St) ->
@@ -146,6 +147,14 @@ collect_exps(Es, #cg{exps=Exps0}=St) ->
     %% Add exports to export set.
     Exps1 = foldl(fun ([F,A], E) -> add_element({F,A}, E) end,
                   Exps0, Es),
+    St#cg{exps=Exps1}.
+
+'collect_exps*'(Es, #cg{exps=Exps0}=St) ->
+    %% Add exports to export set.
+    Exps1 = foldl(fun ([F|As], E0) ->
+                          foldl(fun (A, E1) -> add_element({F,A}, E1) end,
+                               E0, As)
+                  end, Exps0, Es),
     St#cg{exps=Exps1}.
 
 collect_imps(Is, St) ->
