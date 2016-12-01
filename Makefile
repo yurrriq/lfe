@@ -76,6 +76,10 @@ $(BINDIR)/%: $(CSRCDIR)/%.c
 
 $(EBINDIR)/%.beam: $(SRCDIR)/%.erl
 	@mkdir -p $(EBINDIR)
+	$(ERLC) -I $(DSRCDIR) -o $(EBINDIR) $(COMP_OPTS) $(ERLCFLAGS) $<
+
+$(EBINDIR)/%.beam: $(DSRCDIR)/%.erl
+	@mkdir -p $(EBINDIR)
 	$(ERLC) -I $(INCDIR) -o $(EBINDIR) $(COMP_OPTS) $(ERLCFLAGS) $<
 
 %.erl: %.xrl
