@@ -662,9 +662,7 @@ compile_lfe(File, Includes, _Defines, Callgraph, CServer, _UseContracts) ->
     case lfe_comp:file(File, CompOpts) of
 	error -> {error," unknown error"};
 	{error,Errs,_} -> {error,format_errors(Errs)};
-	{ok,_,Core} ->
-	    compile_lfe(Core, Callgraph, CServer);
-        {ok,_,Core,_} ->
+	{ok,[{ok,_Mod,Core,_Ws}|_],_Ws} ->
 	    compile_lfe(Core, Callgraph, CServer)
     end.
 
